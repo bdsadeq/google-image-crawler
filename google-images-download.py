@@ -1,15 +1,13 @@
 
-import time  # Importing the time library to check the time of code execution
-import sys  # Importing the System Library
+import time
+import sys
 import os
-# import urllib2
+
 import urllib.request
 
 search_keyword = ['Australia']
 
 keywords = ['high resolution']
-
-# Downloading entire Web Document (Raw Page Content)
 
 
 def download_page(url):
@@ -24,7 +22,6 @@ def download_page(url):
         print(str(e))
 
 
-# Finding 'Next Image' from the given raw page
 def _images_get_next_item(s):
     start_line = s.find('rg_di')
     if start_line == -1:  # If no links are found then give an error!
@@ -39,7 +36,6 @@ def _images_get_next_item(s):
         return content_raw, end_content
 
 
-# Getting all links with the help of '_images_get_next_image'
 def _images_get_all_items(page):
     items = []
     while True:
@@ -47,20 +43,14 @@ def _images_get_all_items(page):
         if item == "no_links":
             break
         else:
-            # Append all the links in the list named 'Links'
             items.append(item)
-            # Timer could be used to slow down the request for image downloads
             time.sleep(0.1)
             page = page[end_content:]
     return items
 
 
-############## Main Program ############
 def main(search_keyword):
-
     t0 = time.time()  # start the timer
-
-    # Download Image Links
     i = 0
 
     items = []
@@ -71,13 +61,9 @@ def main(search_keyword):
     search_keywords = search_keyword
     search = search_keywords.replace(' ', '%20')
 
-    # make a search keyword  directory
     try:
         os.makedirs(search_keywords)
-    except e:
-        if e.errno != 17:
-            raise
-        # time.sleep might help here
+    except:
         pass
 
     j = 0
@@ -89,50 +75,42 @@ def main(search_keyword):
         time.sleep(0.1)
         items = items + (_images_get_all_items(raw_html))
         j = j + 1
-    #print ("Image Links = "+str(items))
+
     print("Total Image Links = "+str(len(items)))
     print("\n")
 
-    # This allows you to write all the links into a test file. This text file will be created in the same directory as your code. You can comment out the below 3 lines to stop writing the output to the text file.
-    # Open the text file called database.txt
     info = open(str(search_keyword) + '.txt', 'a')
-    info.write(str(i) + ': ' + str(search_keyword) + ": " +
-               str(items) + "\n\n\n")  # Write the title of the page
-    info.close()  # Close the file
+    info.write(str(i) + ': ' + str(search_keyword) +
+               ": " + str(items) + "\n\n\n")
+    info.close()
 
-    t1 = time.time()  # stop the timer
-    # Calculating the total time required to crawl, find and download all the links of 60,000 images
+    t1 = time.time()
     total_time = t1-t0
     print("Total time taken: "+str(total_time)+" Seconds")
     print("Starting Download...")
 
-    # To save imges to the same directory
-    # IN this saving process we are just skipping the URL if there is any error
-
     k = 0
     errorCount = 0
     while(k < len(items)):
-        # from urllib2 import Request, urlopen
-        # from urllib2 import URLError, HTTPError
+        try:
+            req = urllib.request.Request(items[k], headers={
+                "User-Agent": "Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.27 Safari/537.17"})
+            response = urllib.request.urlopen(req, None, 15)
+            output_file = open(search_keywords+"/"+str(k+1)+".jpg", 'wb')
 
-        req = urllib.request.Request(items[k], headers={
-            "User-Agent": "Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.27 Safari/537.17"})
-        response = urllib.request.urlopen(req, None, 15)
-        output_file = open(search_keywords+"/"+str(k+1)+".jpg", 'wb')
+            data = response.read()
+            output_file.write(data)
+            response.close()
 
-        data = response.read()
-        output_file.write(data)
-        response.close()
+            print(str(k+1) + ". Downloaded")
 
-        print("completed ====> "+str(k+1))
-
+        except:
+            print(str(k+1) + ". Problem Downloading")
         k = k+1
 
     print("\n")
     print("Everything downloaded!")
     print("\n"+str(errorCount)+" ----> total Errors")
-
-    #----End of the main program ----#
 
 
 if __name__ == "__main__":
