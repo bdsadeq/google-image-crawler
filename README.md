@@ -2,6 +2,8 @@
 
 Crawl and Download images from Google
 
-ToDo: Workable Python3 Version
+Sample Command:
 
-Note: Currently it supports python2 only
+```bash
+python google-images-download.py keyword directory
+```

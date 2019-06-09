@@ -1,3 +1,4 @@
+# sample command: python google-images-download.py keyword directory
 
 import time
 import sys
@@ -5,7 +6,7 @@ import os
 
 import urllib.request
 
-search_keyword = ['Australia']
+search_keyword = ""
 
 keywords = ['high resolution']
 
@@ -49,7 +50,7 @@ def _images_get_all_items(page):
     return items
 
 
-def main(search_keyword):
+def main(search_keyword, directory):
     t0 = time.time()  # start the timer
     i = 0
 
@@ -61,8 +62,10 @@ def main(search_keyword):
     search_keywords = search_keyword
     search = search_keywords.replace(' ', '%20')
 
+    directory = directory + "/" + search_keywords
+
     try:
-        os.makedirs(search_keywords)
+        os.makedirs(directory)
     except:
         pass
 
@@ -79,7 +82,7 @@ def main(search_keyword):
     print("Total Image Links = "+str(len(items)))
     print("\n")
 
-    info = open(str(search_keyword) + '.txt', 'a')
+    info = open(str(directory) + '.txt', 'a')
     info.write(str(i) + ': ' + str(search_keyword) +
                ": " + str(items) + "\n\n\n")
     info.close()
@@ -96,7 +99,7 @@ def main(search_keyword):
             req = urllib.request.Request(items[k], headers={
                 "User-Agent": "Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.27 Safari/537.17"})
             response = urllib.request.urlopen(req, None, 15)
-            output_file = open(search_keywords+"/"+str(k+1)+".jpg", 'wb')
+            output_file = open(directory+"/"+str(k+1)+".jpg", 'wb')
 
             data = response.read()
             output_file.write(data)
@@ -105,6 +108,7 @@ def main(search_keyword):
             print(str(k+1) + ". Downloaded")
 
         except:
+            errorCount = errorCount + 1
             print(str(k+1) + ". Problem Downloading")
         k = k+1
 
@@ -114,4 +118,8 @@ def main(search_keyword):
 
 
 if __name__ == "__main__":
-    main(sys.argv[1])
+    try:
+        main(sys.argv[1], sys.argv[2])
+    except:
+        print("Error occured.")
+        print("Please try with: python google-images-download.py keyword directory")
